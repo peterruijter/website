@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <header>
+        <!-- Header content goes here -->
+    </header>
+    <main>
+	    <p>  Direct image:<br /> 
+<img src="https://media.nu.nl/m/e7ux3poal8jq_wd854/een-man-doorzoekt-gebouwen-die-zijn-verwoest-tijdens-israelische-luchtaanvallen-in-khan-yunis-gaza-op-10-november-getty-images.jpg" />
+	    </p>
+	    <p>
+	    Image loaded via JS:<br />
+	    <img id="myImageTag" />
+	    </p>
+	    <script>
+const imgTag = document.getElementById('myImageTag');
+
+const imageUrl = 'https://media.nu.nl/m/e7ux3poal8jq_wd854/een-man-doorzoekt-gebouwen-die-zijn-verwoest-tijdens-israelische-luchtaanvallen-in-khan-yunis-gaza-op-10-november-getty-images.jpg';
+
+imgTag.src = imageUrl;
+	    </script>
+	    <p>
+	    Fetched image<br />
+	    <img id="muFetchImgTag" />
+	<script>
+		// Select the <img> element where you want to display the image
+const fetchImgTag = document.getElementById('myFetchImgTag'); // Replace 'yourImgTag' with the actual ID of your <img> element.
+
+// URL of the image
+const fetchImageUrl = 'https://media.nu.nl/m/e7ux3poal8jq_wd854/een-man-doorzoekt-gebouwen-die-zijn-verwoest-tijdens-israelische-luchtaanvallen-in-khan-yunis-gaza-op-10-november-getty-images.jpg';
+
+// Fetch the image using the fetch API
+fetch(fetchImageUrl)
+  .then((response) => response.blob()) // Convert the response to a Blob
+  .then((blob) => {
+    // Create a FileReader to read the Blob as a data URL
+    const reader = new FileReader();
+    reader.onload = () => {
+      // Set the src attribute of the <img> tag to the base64 data URL
+      fetchImgTag.src = reader.result;
+    };
+    reader.readAsDataURL(blob);
+  })
+  .catch((error) => {
+    alert('Error fetching and displaying the image:', error);
+  });
+	</script>
+	    </p>
+    </main>
+    <footer>
+        <!-- Footer content goes here -->
+    </footer>
+</body>
+</html>

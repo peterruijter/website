@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Image URL Tester</title>
+<style>
+  #imageContainer {
+    margin-top: 20px;
+  }
+  #errorDisplay {
+    color: red;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Image URL Tester</h1>
+
+<form id="imageForm">
+  <label for="imageUrl">Image URL:</label><br>
+  <input type="text" id="imageUrl" name="imageUrl" size="80"><br><br>
+  <button type="button" onclick="testImage()">Test Image</button>
+</form>
+
+<div id="imageContainer">
+  <img id="displayImage" style="display: none;" alt="Fetched Image">
+  <p id="imageDimensions" style="display: none;"></p>
+  <p id="errorDisplay"></p>
+</div>
+
+<script>
+function testImage() {
+  const imageUrl = document.getElementById('imageUrl').value;
+  const displayImage = document.getElementById('displayImage');
+  const imageDimensions = document.getElementById('imageDimensions');
+  const errorDisplay = document.getElementById('errorDisplay');
+
+  displayImage.style.display = 'none';
+  imageDimensions.style.display = 'none';
+  errorDisplay.textContent = '';
+
+  const img = new Image();
+
+  img.onload = function() {
+    displayImage.src = imageUrl;
+    displayImage.style.display = 'block';
+    imageDimensions.textContent = `Image dimensions: ${img.width} x ${img.height}`;
+    imageDimensions.style.display = 'block';
+  };
+
+  img.onerror = function(event) {
+    displayImage.style.display = 'none';
+
+    if (event.target instanceof HTMLImageElement && event.target.src !== undefined && event.target.src !== "")
+    {
+		// fetch(imageUrl, {mode: 'no-cors'}) 
+        try {
+            fetch(imageUrl) 
+            .then(response => {
+              if (response.ok) {
+                errorDisplay.textContent = "Image loaded, but CORS policy prevents script access to dimensions. Image is likely served with 'Access-Control-Allow-Origin: *', but without 'Access-Control-Expose-Headers: Content-Length' or similar headers needed to access image properties.";
+              } else {
+                errorDisplay.textContent = `Error loading image. Server responded with status: ${response.status} ${response.statusText}. CORS policy may be preventing access, or the image URL may be incorrect.`;
+              }
+            })
+            .catch(error => {
+              errorDisplay.textContent = `Error loading image: ${error.message}. CORS policy may be preventing access, or the image URL may be incorrect.`;
+            });
+        } catch (error) {
+            errorDisplay.textContent = `Error loading image: ${error.message}. CORS policy may be preventing access, or the image URL may be incorrect.`;
+        }
+    } else {
+        errorDisplay.textContent = "An unknown error occurred while trying to load the image.";
+    }
+  };
+
+  img.src = imageUrl;
+}
+</script>
+
+</body>
+</html>

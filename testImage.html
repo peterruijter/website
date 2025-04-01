@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Loader and Analyzer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .image-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .image-display {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            width: 400px;
+        }
+
+        .image-info {
+            margin-top: 10px;
+        }
+
+        .error-display {
+            color: red;
+            margin-top: 10px;
+        }
+
+        img {
+            max-width: 100%;
+            max-height: 300px;
+            display: block;
+        }
+
+        input {
+            width: 70%;
+            padding: 8px;
+        }
+
+        button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 0, 0, .3);
+            border-radius: 50%;
+            border-top-color: #000;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+      <!--   Google Tag Manager-->
+  <script>(function (w, d, s, l, i) {
+    w[l] = w[l] || [];
+    w[l].push({
+      'gtm.start':
+        new Date().getTime(), event: 'gtm.js'
+    });
+    const f = d.getElementsByTagName(s)[0],
+      j = d.createElement(s), dl = l !== 'dataLayer' ? '&l=' + l : '';
+    j.async = true;
+    j.src =
+      'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+    f.parentNode.insertBefore(j, f);
+  })(window, document, 'script', 'dataLayer', 'GTM-K46X76G');</script>
+<!-- End Google Tag Manager -->
+<meta name="google-site-verification" content="iNvqwh5EBuwIg8AkIffDTq67fwi9SBsvqWc9uG8Efow">
+</head>
+
+<body>
+    <h1>Image Loader and Analyzer</h1>
+
+    <div>
+        <label for="imageUrl">Image URL:</label><br>
+        <input type="text" id="imageUrl" placeholder="Enter image URL here" size="80">
+        <button onclick="loadImage()">Load Image</button>
+        <span id="loadingIndicator" class="loading" style="display: none;"></span>
+    </div>
+
+    <div class="image-container">
+        <div class="image-display">
+            <h3>Direct Load Method</h3>
+            <img id="directImage" alt="Direct loaded image" style="display: none;">
+            <div id="directImageInfo" class="image-info"></div>
+            <div id="directImageError" class="error-display"></div>
+        </div>
+
+        <div class="image-display">
+            <h3>Fetch API Method</h3>
+            <img id="fetchImage" alt="Fetch loaded image" style="display: none;">
+            <div id="fetchImageInfo" class="image-info"></div>
+            <div id="fetchImageError" class="error-display"></div>
+        </div>
+
+        <div class="image-display">
+            <h3>Canvas Analysis Method</h3>
+            <canvas id="imageCanvas" style="display: none;"></canvas>
+            <img id="canvasImage" alt="Canvas analyzed image" style="display: none;">
+            <div id="canvasImageInfo" class="image-info"></div>
+            <div id="canvasImageError" class="error-display"></div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Extracts the image URL from query parameter if present
+         * Called when the page loads to auto-analyze images from the URL
+         */
+        function checkQueryParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const imgParam = urlParams.get('img');
+
+            if (imgParam) {
+                // Set the input field value
+                document.getElementById('imageUrl').value = imgParam;
+                // Automatically load the image
+                loadImage();
+            }
+        }
+
+        /**
+         * Loads and displays an image using all three methods
+         * Handles errors and displays image information when available
+         */
+        function loadImage() {
+            // Get the image URL from input
+            const imageUrl = document.getElementById('imageUrl').value.trim();
+            if (!imageUrl) {
+                alert('Please enter an image URL');
+                return;
+            }
+
+            // Show loading indicator
+            document.getElementById('loadingIndicator').style.display = 'inline-block';
+
+            // Reset previous results
+            resetDisplays();
+
+            // Load image using direct method
+            loadDirectImage(imageUrl);
+
+            // Load image using fetch API
+            loadFetchImage(imageUrl);
+
+            // Load and analyze image using canvas
+            loadCanvasImage(imageUrl);
+        }
+
+        /**
+         * Resets all display elements to their initial state
+         */
+        function resetDisplays() {
+            // Direct image elements
+            document.getElementById('directImage').style.display = 'none';
+            document.getElementById('directImageInfo').textContent = '';
+            document.getElementById('directImageError').textContent = '';
+
+            // Fetch image elements
+            document.getElementById('fetchImage').style.display = 'none';
+            document.getElementById('fetchImageInfo').textContent = '';
+            document.getElementById('fetchImageError').textContent = '';
+
+            // Canvas image elements
+            const canvas = document.getElementById('imageCanvas');
+            canvas.style.display = 'none';
+            canvas.width = 0;
+            canvas.height = 0;
+            document.getElementById('canvasImage').style.display = 'none';
+            document.getElementById('canvasImageInfo').textContent = '';
+            document.getElementById('canvasImageError').textContent = '';
+        }
+
+        /**
+         * Loads an image directly by setting the src attribute
+         * @param {string} imageUrl - URL of the image to load
+         */
+        function loadDirectImage(imageUrl) {
+            const imgElement = document.getElementById('directImage');
+            const infoElement = document.getElementById('directImageInfo');
+            const errorElement = document.getElementById('directImageError');
+
+            // Create a new Image object to get dimensions
+            const img = new Image();
+
+            // Set up event handlers
+            img.onload = function () {
+                // Display the image
+                imgElement.src = imageUrl;
+                imgElement.style.display = 'block';
+
+                // Show image information
+                infoElement.innerHTML = `
+                    <p>Width: ${img.width}px</p>
+                    <p>Height: ${img.height}px</p>
+                    <p>Aspect ratio: ${(img.width / img.height).toFixed(2)}</p>
+                `;
+
+                checkLoadingComplete();
+            };
+
+            img.onerror = function () {
+                errorElement.textContent = 'Error loading image directly. The URL may be incorrect or the server may block direct access.';
+                checkLoadingComplete();
+            };
+
+            // Start loading the image
+            img.src = imageUrl;
+        }
+
+        /**
+         * Loads an image using the Fetch API
+         * Can sometimes bypass CORS issues and provides more detailed errors
+         * @param {string} imageUrl - URL of the image to load
+         */
+        function loadFetchImage(imageUrl) {
+            const imgElement = document.getElementById('fetchImage');
+            const infoElement = document.getElementById('fetchImageInfo');
+            const errorElement = document.getElementById('fetchImageError');
+
+            // Attempt to fetch the image
+            fetch(imageUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Server responded with status: ${response.status} ${response.statusText}`);
+                    }
+
+                    // Get content type and size if available
+                    const contentType = response.headers.get('content-type') || 'unknown';
+                    const contentLength = response.headers.get('content-length');
+
+                    // Store headers info for display
+                    infoElement.innerHTML = `
+                        <p>Content Type: ${contentType}</p>
+                        ${contentLength ? `<p>File Size: ${formatFileSize(contentLength)}</p>` : ''}
+                    `;
+
+                    return response.blob();
+                })
+                .then(blob => {
+                    // Create a URL for the blob
+                    const objectUrl = URL.createObjectURL(blob);
+
+                    // Create an image to get dimensions
+                    const img = new Image();
+                    img.onload = function () {
+                        // Append dimension info
+                        infoElement.innerHTML += `
+                            <p>Width: ${img.width}px</p>
+                            <p>Height: ${img.height}px</p>
+                            <p>Aspect ratio: ${(img.width / img.height).toFixed(2)}</p>
+                        `;
+
+                        // Display the image
+                        imgElement.src = objectUrl;
+                        imgElement.style.display = 'block';
+
+                        // Release the blob URL once the image is loaded
+                        URL.revokeObjectURL(objectUrl);
+                    };
+
+                    img.src = objectUrl;
+                })
+                .catch(error => {
+                    errorElement.textContent = `Fetch error: ${error.message}`;
+                })
+                .finally(() => {
+                    checkLoadingComplete();
+                });
+        }
+
+        /**
+         * Formats file size in bytes to human-readable format
+         * @param {number} bytes - File size in bytes
+         * @return {string} Formatted file size with units
+         */
+        function formatFileSize(bytes) {
+            bytes = parseInt(bytes);
+            if (isNaN(bytes)) return 'Unknown';
+
+            const units = ['B', 'KB', 'MB', 'GB'];
+            let unitIndex = 0;
+
+            while (bytes >= 1024 && unitIndex < units.length - 1) {
+                bytes /= 1024;
+                unitIndex++;
+            }
+
+            return `${bytes.toFixed(2)} ${units[unitIndex]}`;
+        }
+
+        /**
+         * Checks if all loading methods have completed and hides the loading indicator
+         */
+        function checkLoadingComplete() {
+            // Check if direct image has either loaded or failed
+            const directImageLoaded = document.getElementById('directImage').style.display !== 'none' ||
+                document.getElementById('directImageError').src !== '';
+
+            // Check if fetch image has either loaded or failed
+            const fetchImageLoaded = document.getElementById('fetchImage').style.display !== 'none' ||
+                document.getElementById('fetchImageError').src !== '';
+
+            // Check if canvas image has either loaded or failed
+            const canvasImageLoaded = document.getElementById('canvasImage').style.display !== 'none' ||
+                document.getElementById('canvasImageError').src !== '';
+
+
+            // If all methods have completed, hide the loading indicator
+            const intervalId = setInterval(() => {
+                if (directImageLoaded && fetchImageLoaded && canvasImageLoaded) {
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                    clearInterval(intervalId);
+                } else {
+                    console.log('Waiting for directImageLoaded and fetchImageLoaded to completed...');
+                }
+            }, 100);
+        }
+        /**
+         * Loads an image using Canvas to analyze it in detail
+         * Can determine MIME type based on signature and estimate file size
+         * @param {string} imageUrl - URL of the image to load
+         */
+        function loadCanvasImage(imageUrl) {
+            const canvas = document.getElementById('imageCanvas');
+            const canvasContext = canvas.getContext('2d');
+            const imgElement = document.getElementById('canvasImage');
+            const infoElement = document.getElementById('canvasImageInfo');
+            const errorElement = document.getElementById('canvasImageError');
+
+            // Create a new Image object
+            const img = new Image();
+
+            // Set up crossOrigin to try to handle CORS issues
+            img.crossOrigin = 'anonymous';
+
+            // Set up event handlers
+            img.onload = function () {
+                try {
+                    // Set canvas dimensions to match the image
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+
+                    // Draw the image on the canvas
+                    canvasContext.drawImage(img, 0, 0);
+
+                    // Display the image
+                    imgElement.src = img.src;
+                    imgElement.style.display = 'block';
+
+                    // Get basic image information
+                    let imageInfo = `
+                        <p>Width: ${img.width}px</p>
+                        <p>Height: ${img.height}px</p>
+                        <p>Aspect ratio: ${(img.width / img.height).toFixed(2)}</p>
+                    `;
+
+                    // Get image data for analysis
+                    let imageData;
+                    try {
+                        imageData = canvasContext.getImageData(0, 0, canvas.width, canvas.height);
+
+                        // Analyze image data
+                        const { format, estimatedSize, colorInfo } = analyzeImageData(imageData, canvas);
+
+                        // Add format and size info
+                        imageInfo += `
+                            <p>Format: ${format}</p>
+                            <p>Est. uncompressed size: ${formatFileSize(estimatedSize)}</p>
+                            <p>Color depth: ${colorInfo.depth}-bit</p>
+                            <p>Has transparency: ${colorInfo.hasTransparency ? 'Yes' : 'No'}</p>
+                        `;
+
+                        // Try to determine MIME type from canvas data URL
+                        const dataUrl = canvas.toDataURL();
+                        const mimeType = dataUrl.split(',')[0].split(':')[1].split(';')[0];
+                        imageInfo += `<p>MIME type (from canvas): ${mimeType}</p>`;
+
+                        // Add color distribution info if available
+                        if (colorInfo.colorDistribution) {
+                            imageInfo += `<p>Dominant colors: ${colorInfo.colorDistribution}</p>`;
+                        }
+
+                        // Generate a data URL and add compressed size estimate
+                        const pngUrl = canvas.toDataURL('image/png');
+                        const jpgUrl = canvas.toDataURL('image/jpeg', 0.85);
+                        const webpUrl = canvas.toDataURL('image/webp', 0.85);
+
+                        imageInfo += `
+                            <p>PNG data URL size: ${formatFileSize(pngUrl.length * 0.75)}</p>
+                            <p>JPEG data URL size: ${formatFileSize(jpgUrl.length * 0.75)}</p>
+                        `;
+
+                        // Check if WebP is supported
+                        if (webpUrl.includes('data:image/webp')) {
+                            imageInfo += `<p>WebP data URL size: ${formatFileSize(webpUrl.length * 0.75)}</p>`;
+                        }
+                    } catch (e) {
+                        // If getImageData fails, it's likely due to CORS restrictions
+                        imageInfo += `<p>Advanced analysis unavailable due to CORS policy</p>`;
+                        errorElement.textContent = `Cannot access pixel data: ${e.message}. This is likely due to CORS restrictions.`;
+                    }
+
+                    infoElement.innerHTML = imageInfo;
+                } catch (error) {
+                    errorElement.textContent = `Canvas error: ${error.message}`;
+                }
+
+                checkLoadingComplete();
+            };
+
+            img.onerror = function () {
+                errorElement.textContent = 'Error loading image into canvas. The URL may be incorrect, or the server may have CORS restrictions.';
+                checkLoadingComplete();
+            };
+
+            img.src = imageUrl;
+        }
+
+        /**
+         * Analyzes image data to determine format, estimate size, and extract color information
+         * @param {ImageData} imageData - The pixel data from the canvas
+         * @param {HTMLCanvasElement} canvas - The canvas element
+         * @return {Object} Analysis results including format, size and color info
+         */
+        function analyzeImageData(imageData, canvas) {
+            const pixels = imageData.data;
+            const width = imageData.width;
+            const height = imageData.height;
+
+            // Check for transparency
+            let hasTransparency = false;
+            let uniqueColors = new Set();
+            let redTotal = 0, greenTotal = 0, blueTotal = 0;
+
+            // Sample pixels for analysis (every 10th pixel to save processing)
+            for (let i = 0; i < pixels.length; i += 40) { // 4 channels (RGBA) * 10 pixels
+                const r = pixels[i];
+                const g = pixels[i + 1];
+                const b = pixels[i + 2];
+                const a = pixels[i + 3];
+
+                // Check for transparency
+                if (a < 255) {
+                    hasTransparency = true;
+                }
+
+                // Track unique colors (simplified for performance)
+                if (uniqueColors.size < 100) { // Limit to prevent slow performance
+                    uniqueColors.add(`${r},${g},${b}`);
+                }
+
+                // Track average color
+                redTotal += r;
+                greenTotal += g;
+                blueTotal += b;
+            }
+
+            // Calculate average color
+            const pixelCount = pixels.length / 4;
+            const avgRed = Math.round(redTotal / pixelCount);
+            const avgGreen = Math.round(greenTotal / pixelCount);
+            const avgBlue = Math.round(blueTotal / pixelCount);
+
+            // Determine likely format based on transparency and color count
+            let format = 'Unknown';
+            let depth = 24; // Default to 24-bit (8 bits per channel RGB)
+
+            if (hasTransparency) {
+                format = 'PNG or WebP with transparency';
+                depth = 32; // 8 bits per channel RGBA
+            } else if (uniqueColors.size < 256) {
+                format = 'PNG or GIF (limited colors)';
+                depth = 8; // 8-bit indexed color
+            } else {
+                // Try to detect if it's likely a photo vs graphic
+                // Photos have smooth gradients and many colors
+                if (uniqueColors.size >= 100) { // We limited collection to 100 earlier
+                    format = 'JPEG, WebP or PNG (photo/complex image)';
+                } else {
+                    format = 'PNG (graphic/illustration)';
+                }
+            }
+
+            // Estimate uncompressed size (width * height * bytes per pixel)
+            const bytesPerPixel = depth / 8;
+            const estimatedSize = width * height * bytesPerPixel;
+
+            // Prepare color info
+            const colorInfo = {
+                hasTransparency,
+                depth,
+                averageColor: `rgb(${avgRed}, ${avgGreen}, ${avgBlue})`,
+                uniqueColorCount: uniqueColors.size >= 100 ? '100+' : uniqueColors.size,
+                colorDistribution: `Average RGB: (${avgRed}, ${avgGreen}, ${avgBlue})`
+            };
+
+            return {
+                format,
+                estimatedSize,
+                colorInfo
+            };
+        }
+    </script>
+    <script>
+        // Run the query parameter check when the page loads
+        window.addEventListener('DOMContentLoaded', checkQueryParams);
+    </script>
+</body>
+
+</html>

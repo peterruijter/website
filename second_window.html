@@ -1,0 +1,44 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Second Window</title>
+ <script>
+         window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('message', function(event) {
+      const createdDiv = document.createElement('div');
+      document.body.appendChild(createdDiv);
+
+      // Store current time upon receiving message
+      const eventSource  = event.source;
+      const eventOrigin = event.origin; 	    
+	     
+	     const content = document.getElementById('contentWindow').textContent;
+        console.log('content', content)
+	     eventSource.postMessage(content, eventOrigin);
+      });  
+
+ }); 
+    
+  </script>
+</head>
+<body>
+
+	<div id="contentWindow">
+	Rhenen - De Inspectie Gezondheidszorg en Jeugd (IGJ) heeft de woonlocatie van Stichting De Drijvende Ambachtsschool in Terwolde op de vingers getikt. "Jongeren die er verblijven zijn onvoldoende veilig", aldus de inspectie. De organisatie mag voorlopig geen nieuwe jongeren aannemen.
+Reden van de aanwijzing, zoals de tik op de vingers officieel heet, is dat er onvoldoende geschoold personeel aanwezig zou zijn op de groep. Ook zouden incidenten niet geregistreerd worden en jongeren in hun vrijheid worden beperkt, zonder dat daar een wettelijke grondslag voor is. De komende maanden moet de organisatie de kwaliteit van de zorg verbeteren.
+Onderzoek
+De inspectie startte in februari een onderzoek nadat er signalen over de woongroep binnenkwamen. Er volgden bezoeken aan de locatie en gesprekken met bestuurders, medewerkers, jongeren en ouders. Aan de hand daarvan concludeert de IGJ dat de zorg niet voldoet aan de normen voor verantwoorde jeugdhulp.
+Op de woongroep verblijven kwetsbare jongeren met een complexe hulpvraag, waarbij meerdere problemen spelen. Onder meer autisme, verslavingsproblematiek, psychische- en forensische problematiek spelen een rol. Zij volgen ook dagbesteding via de organisatie.
+"We geven jongeren ervaring in het werken met gereedschap en machines, zoals hamers, schuurmachines, grasmaaiers, heggenscharen en natuurlijk buitenboordmotoren en alles wat er komt kijken bij het varen met een boot", valt te lezen op de website van De Drijvende Ambachtsschool.
+Ambitie om te groeien
+Op het moment van het onderzoek verbleven er vijf jongeren op de woongroep. Zij zijn tussen de 12 en 19 jaar oud. In totaal is er plek voor twaalf jongeren in Terwolde, de ambitie van de organisatie is om dit uiteindelijk ook te realiseren.
+De organisatie krijgt de komende zes maanden de tijd om te voldoen aan de normen. Doet de Drijvende Ambachtsschool dat niet, dan kunnen er verdere maatregelen volgen.
+De inspectie heeft er overigens beperkt vertrouwen in dat de woongroep verbeteringen kan doorvoeren. "Dit heeft te maken de omvang en inhoud van de verbeteringen en het ontbreken van deskundig personeel en een lerend, reflecterend werkklimaat."
+	
+	</div>
+
+</body>
+</html>
+
+
