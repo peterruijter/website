@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Traffic Visualizer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        h1,
+        h2 {
+            color: #2c3e50;
+        }
+
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 30px;
+        }
+
+        .stats-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 200px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 5px 0;
+            color: #3498db;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .traffic-drops {
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .traffic-drops h3 {
+            margin-top: 0;
+            color: #e74c3c;
+        }
+
+        .drop-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .drop-percentage {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .sample-button {
+            background-color: #27ae60;
+            margin-right: 10px;
+        }
+
+        .time-filter {
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .time-filter select {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .hourly-chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .stat-card {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Website Traffic Visualizer</h1>
+
+        <div class="input-section">
+            <h2>Input Data</h2>
+            <p>Paste your JSON traffic data below (should contain timestamps and view counts):</p>
+            <textarea id="jsonInput"
+                placeholder='Paste JSON array like [{"key_as_string": "2025-03-28T16:30:00.000Z", "views": {"value": 5278}}, ...]'></textarea>
+            <div>
+                <button class="sample-button" onclick="loadSampleData()">Load Sample Data</button>
+                <button onclick="visualizeData()">Visualize Data</button>
+            </div>
+        </div>
+
+        <div id="resultsSection" style="display: none;">
+            <h2>Traffic Visualization</h2>
+
+            <div class="time-filter">
+                <label for="timeInterval">Time Interval:</label>
+                <select id="timeInterval" onchange="changeTimeInterval()">
+                    <option value="minute">Per Minute</option>
+                    <option value="hour">Hourly Average</option>
+                    <option value="day">Daily Average</option>
+                </select>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="trafficChart"></canvas>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-label">Average Views</div>
+                    <div id="avgViews" class="stat-value">0</div>
+                    <div class="stat-label">per minute</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Peak Traffic</div>
+                    <div id="maxViews" class="stat-value">0</div>
+                    <div class="stat-label">views</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Minimum Traffic</div>
+                    <div id="minViews" class="stat-value">0</div>
+                    <div class="stat-label">views</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Time Range</div>
+                    <div id="timeRange" class="stat-value" style="font-size: 16px;">-</div>
+                </div>
+            </div>
+
+            <div id="trafficDropsContainer" class="traffic-drops">
+                <h3>Significant Traffic Drops</h3>
+                <div id="trafficDropsList"></div>
+            </div>
+
+            <h2>Hourly Traffic Pattern</h2>
+            <div class="hourly-chart-container">
+                <canvas id="hourlyChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables to store charts and data
+        let trafficChart = null;
+        let hourlyChart = null;
+        let parsedData = [];
+        let currentInterval = 'minute';
+
+        // Helper function to format dates
+        function formatDate(date) {
+            return date.toLocaleString('NL-nl', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+                timeZone: 'UTC'
+            }) + ' UTC';
+        }
+
+        // Load sample data for demonstration
+        function loadSampleData() {
+            fetch('https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.json')
+                .then(response => response.json())
+                .then(data => {
+                    // Format the data to match our expected format
+                    const sampleData = data.slice(0, 100).map(item => {
+                        return {
+                            key_as_string: item.Date,
+                            views: {
+                                value: item.AAPL.High * 10  // Using stock price as a proxy for views
+                            }
+                        };
+                    });
+
+                    document.getElementById('jsonInput').value = JSON.stringify(sampleData, null, 2);
+                })
+                .catch(error => {
+                    console.error('Error loading sample data:', error);
+                    // Fallback sample data if fetch fails
+                    const sampleData = [];
+                    const startDate = new Date(Date.UTC('2025-03-28T16:30:00Z'));
+
+                    for (let i = 0; i < 60; i++) {
+                        const timestamp = new Date(startDate.getTime() + i * 60000);
+                        const views = Math.floor(3000 + Math.random() * 3000);
+                        sampleData.push({
+                            key_as_string: timestamp.toISOString(),
+                            views: {
+                                value: views
+                            }
+                        });
+                    }
+
+                    document.getElementById('jsonInput').value = JSON.stringify(sampleData, null, 2);
+                });
+        }
+
+        // Main function to visualize the data
+        function visualizeData() {
+            try {
+                const jsonInput = document.getElementById('jsonInput').value.trim();
+
+                // Handle potential JSON format issues
+                let jsonData;
+                try {
+                    jsonData = JSON.parse(jsonInput);
+                } catch (e) {
+                    alert('Invalid JSON format. Please check your input.');
+                    console.error('JSON parse error:', e);
+                    return;
+                }
+
+                // Make sure we have an array
+                if (!Array.isArray(jsonData)) {
+                    alert('Input must be a JSON array. Please check your data format.');
+                    return;
+                }
+
+                if (jsonData.length === 0) {
+                    alert('No data found. Please provide valid traffic data.');
+                    return;
+                }
+
+                // Process the data
+                processData(jsonData);
+
+                // Show results section
+                document.getElementById('resultsSection').style.display = 'block';
+
+            } catch (error) {
+                console.error('Error processing data:', error);
+                alert('Error processing data: ' + error.message);
+            }
+        }
+
+        // Process the input data
+        function processData(jsonData) {
+            // Clear previous data
+            parsedData = [];
+
+            // Parse the data
+            jsonData.forEach(item => {
+                // Validate required fields
+                if (!item.key_as_string || !item.views || item.views.value === undefined) {
+                    console.warn('Skipping invalid data point:', item);
+                    return;
+                }
+
+                try {
+                    // Ensure proper UTC date parsing
+                    const timestamp = new Date(item.key_as_string);
+
+                    // Verify the date is valid
+                    if (isNaN(timestamp.getTime())) {
+                        throw new Error('Invalid timestamp format');
+                    }
+
+                    const views = parseFloat(item.views.value);
+
+                    parsedData.push({
+                        timestamp,
+                        formattedTime: formatDate(timestamp),
+                        views,
+                        hour: timestamp.getUTCHours(), // Explicitly use UTC hours
+                        minute: timestamp.getUTCMinutes(), // Add UTC minutes for more granular analysis
+                        date: timestamp.toISOString().split('T')[0] // ISO date format YYYY-MM-DD
+                    });
+                } catch (e) {
+                    console.warn('Error processing data point:', e, item);
+                }
+            });
+
+            // Sort by timestamp to ensure chronological order
+            parsedData.sort((a, b) => a.timestamp - b.timestamp);
+
+            // Calculate statistics
+            calculateStats();
+
+            // Update charts based on current interval
+            updateCharts();
+        }
+
+        // Calculate statistics from the data
+        function calculateStats() {
+            if (parsedData.length === 0) return;
+
+            const viewValues = parsedData.map(item => item.views);
+            const minViews = Math.min(...viewValues);
+            const maxViews = Math.max(...viewValues);
+            const avgViews = viewValues.reduce((sum, val) => sum + val, 0) / viewValues.length;
+
+            // Update DOM with statistics
+            document.getElementById('avgViews').textContent = Math.round(avgViews).toLocaleString();
+            document.getElementById('maxViews').textContent = Math.round(maxViews).toLocaleString();
+            document.getElementById('minViews').textContent = Math.round(minViews).toLocaleString();
+
+            const startDate = parsedData[0].timestamp;
+            const endDate = parsedData[parsedData.length - 1].timestamp;
+            document.getElementById('timeRange').textContent =
+                formatDate(startDate) + ' - ' + formatDate(endDate);
+
+            // Find significant traffic drops
+            findTrafficDrops(avgViews);
+        }
+
+        /**
+ * Find significant drops in traffic using statistical methods (standard deviation)
+ * @param {Array} parsedData - Array of data points with timestamp and views
+ * @param {Number} stdDevThreshold - Number of standard deviations to use as threshold (default: 2)
+ * @returns {Array} Array of significant traffic drops
+ */
+        function findTrafficDropsStatistical(parsedData, stdDevThreshold = 2) {
+            if (parsedData.length < 2) return [];
+
+            // Calculate percentage changes between consecutive data points
+            const percentChanges = [];
+
+            for (let i = 1; i < parsedData.length; i++) {
+                const prevViews = parsedData[i - 1].views;
+                const currViews = parsedData[i].views;
+                // Calculate percentage change (negative values represent drops)
+                const percentChange = ((currViews - prevViews) / prevViews) * 100;
+                percentChanges.push({
+                    index: i,
+                    percentChange: percentChange
+                });
+            }
+
+            // Calculate mean of percentage changes
+            const sum = percentChanges.reduce((acc, curr) => acc + curr.percentChange, 0);
+            const mean = sum / percentChanges.length;
+
+            // Calculate standard deviation
+            const squaredDiffs = percentChanges.map(item => Math.pow(item.percentChange - mean, 2));
+            const variance = squaredDiffs.reduce((acc, curr) => acc + curr, 0) / percentChanges.length;
+            const stdDev = Math.sqrt(variance);
+
+            // Set threshold for significant drops (negative changes beyond X standard deviations)
+            const threshold = mean - stdDevThreshold * stdDev;
+
+            // Identify significant drops
+            const significantDrops = [];
+
+            for (let i = 0; i < percentChanges.length; i++) {
+                const change = percentChanges[i];
+                // Only consider changes that are beyond our threshold (negative = drops)
+                if (change.percentChange < threshold) {
+                    const dataIndex = change.index;
+                    significantDrops.push({
+                        time: parsedData[dataIndex].timestamp,
+                        formattedTime: parsedData[dataIndex].formattedTime,
+                        prevViews: parsedData[dataIndex - 1].views,
+                        currViews: parsedData[dataIndex].views,
+                        percentDrop: -change.percentChange, // Convert to positive number for display
+                        stdDevs: (mean - change.percentChange) / stdDev // How many stdDevs from mean
+                    });
+                }
+            }
+
+            return significantDrops;
+        }
+
+        // Replace the old findTrafficDrops function with our new statistical method
+        function findTrafficDrops(avgViews) {
+            const drops = findTrafficDropsStatistical(parsedData);
+
+            // Update DOM with traffic drops
+            const trafficDropsList = document.getElementById('trafficDropsList');
+            trafficDropsList.innerHTML = '';
+
+            if (drops.length === 0) {
+                trafficDropsList.innerHTML = '<p>No statistically significant traffic drops detected.</p>';
+            } else {
+                // Add explanation of method
+                const explanation = document.createElement('p');
+                explanation.innerHTML = '<small>Showing drops that are more than 2 standard deviations from the mean percentage change.</small>';
+                trafficDropsList.appendChild(explanation);
+
+                // Add each drop to the list
+                drops.forEach(drop => {
+                    const dropElement = document.createElement('div');
+                    dropElement.className = 'drop-item';
+                    dropElement.innerHTML = `
+                <strong>${drop.formattedTime}</strong>: 
+                ${Math.round(drop.prevViews).toLocaleString()} → 
+                ${Math.round(drop.currViews).toLocaleString()} 
+                <span class="drop-percentage">(-${Math.round(drop.percentDrop)}%)</span>
+                <small>${drop.stdDevs.toFixed(1)} σ from mean</small>
+            `;
+                    trafficDropsList.appendChild(dropElement);
+                });
+            }
+        }
+
+        // Change the time interval for the main chart
+        function changeTimeInterval() {
+            currentInterval = document.getElementById('timeInterval').value;
+            updateCharts();
+        }
+
+        // Update both charts
+        function updateCharts() {
+            updateTrafficChart();
+            updateHourlyChart();
+        }
+
+        // Update the main traffic chart
+        function updateTrafficChart() {
+            let chartData;
+            let chartLabels;
+
+            if (currentInterval === 'minute') {
+                // Use raw data for minute view
+                chartData = parsedData.map(item => item.views);
+                chartLabels = parsedData.map(item => item.formattedTime);
+            } else if (currentInterval === 'hour') {
+                // Aggregate by hour
+                const hourlyData = {};
+
+                parsedData.forEach(item => {
+                    const hourKey = item.timestamp.toISOString().substring(0, 13);
+                    if (!hourlyData[hourKey]) {
+                        hourlyData[hourKey] = {
+                            sum: 0,
+                            count: 0,
+                            label: item.timestamp.toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit'
+                            })
+                        };
+                    }
+                    hourlyData[hourKey].sum += item.views;
+                    hourlyData[hourKey].count++;
+                });
+
+                const hourlyArray = Object.entries(hourlyData).map(([key, data]) => ({
+                    hour: key,
+                    label: data.label,
+                    avgViews: data.sum / data.count
+                }));
+
+                hourlyArray.sort((a, b) => a.hour.localeCompare(b.hour));
+
+                chartData = hourlyArray.map(item => item.avgViews);
+                chartLabels = hourlyArray.map(item => item.label);
+            } else if (currentInterval === 'day') {
+                // Aggregate by day
+                const dailyData = {};
+
+                parsedData.forEach(item => {
+                    const dayKey = item.timestamp.toISOString().substring(0, 10);
+                    if (!dailyData[dayKey]) {
+                        dailyData[dayKey] = {
+                            sum: 0,
+                            count: 0,
+                            label: item.timestamp.toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric'
+                            })
+                        };
+                    }
+                    dailyData[dayKey].sum += item.views;
+                    dailyData[dayKey].count++;
+                });
+
+                const dailyArray = Object.entries(dailyData).map(([key, data]) => ({
+                    day: key,
+                    label: data.label,
+                    avgViews: data.sum / data.count
+                }));
+
+                dailyArray.sort((a, b) => a.day.localeCompare(b.day));
+
+                chartData = dailyArray.map(item => item.avgViews);
+                chartLabels = dailyArray.map(item => item.label);
+            }
+
+            // Create or update the traffic chart
+            const ctx = document.getElementById('trafficChart').getContext('2d');
+
+            if (trafficChart) {
+                trafficChart.data.labels = chartLabels;
+                trafficChart.data.datasets[0].data = chartData;
+                trafficChart.update();
+            } else {
+                trafficChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: chartLabels,
+                        datasets: [{
+                            label: currentInterval === 'minute' ? 'Views per Minute' :
+                                currentInterval === 'hour' ? 'Average Views per Hour' : 'Average Views per Day',
+                            data: chartData,
+                            borderColor: 'rgba(52, 152, 219, 1)',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            borderWidth: 2,
+                            pointRadius: chartData.length > 100 ? 0 : 2,
+                            pointHoverRadius: 5,
+                            fill: true,
+                            tension: 0.2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return `Views: ${Math.round(context.raw).toLocaleString()}`;
+                                    }
+                                }
+                            },
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    maxRotation: 45,
+                                    minRotation: 45,
+                                    autoSkip: true,
+                                    maxTicksLimit: 20
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Views'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Update the hourly pattern chart
+        function updateHourlyChart() {
+            // Calculate hourly averages
+            const hourlyAverage = {};
+
+            for (let i = 0; i < 24; i++) {
+                hourlyAverage[i] = { sum: 0, count: 0 };
+            }
+
+            parsedData.forEach(item => {
+                const hour = item.hour;
+                hourlyAverage[hour].sum += item.views;
+                hourlyAverage[hour].count++;
+            });
+
+            const hourlyData = Array.from({ length: 24 }, (_, i) => {
+                const avg = hourlyAverage[i].count > 0 ?
+                    hourlyAverage[i].sum / hourlyAverage[i].count : 0;
+                return avg;
+            });
+
+            const hourLabels = Array.from({ length: 24 }, (_, i) =>
+                `${i.toString().padStart(2, '0')}:00`);
+
+            // Create or update the hourly chart
+            const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+
+            if (hourlyChart) {
+                hourlyChart.data.datasets[0].data = hourlyData;
+                hourlyChart.update();
+            } else {
+                hourlyChart = new Chart(hourlyCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: hourLabels,
+                        datasets: [{
+                            label: 'Average Views per Hour (UTC)',
+                            data: hourlyData,
+                            backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                            borderColor: 'rgba(52, 152, 219, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return `Avg Views: ${Math.round(context.raw).toLocaleString()}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Average Views'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>

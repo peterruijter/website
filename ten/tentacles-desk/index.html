@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-69306229-2"></script>
+<link href="../tentacles-desk/index.css" rel="stylesheet"></head>
+<body>
+
+<main id="tentacles-desk" class="tentacles-desk">
+
+  <article class="tentacles-desk__content">
+    <section id="login" class="login">
+      <h2>Log in to <br>SmartOcto</h2>
+      <br><br>
+      <form novalidate>
+        <input type="text" name="email" id="email" placeholder="E-mail" autocomplete="username" required>
+        <input type="password" name="password" id="password" placeholder="Wachtwoord" autocomplete="current-password"
+               required invalide>
+        <div class="login__error" data-role="error">
+          <i class="icon-error"></i>
+          <span data-role="error-message">error message</span>
+        </div>
+        <br><br>
+        <input type="checkbox" name="stay" id="stay">
+        <label for="stay" class="login__toggle-stay">Stay logged in</label>
+        <input type="submit" value="Log in" class="login__submit">
+        <a class="login__forgot-password" href="https://demo.smartocto.com/public/forgot.html" target="_blank">Forgotten
+          password?</a>
+      </form>
+    </section>
+
+    <section id="articles" class="articles">
+      <div class="overview-panel" data-role="overview-panel">
+        <!--<p class="overview-panel__intro">-->
+        <!--Goedemorgen! We hebben vandaag een slow day, maar wel met een <u>uitschieter</u>!-->
+        <!--</p>-->
+        <ul class="overview-panel__numbers">
+          <!--<li><span data-role="overview-panel__actions"></span> actions</li>-->
+          <li class="overview-panel__number"><span data-role="overview-panel__views"></span> Views</li>
+          <li class="overview-panel__number"><span data-role="overview-panel__clicks"></span> Clicks</li>
+          <li class="overview-panel__number"><span data-role="overview-panel__tests"></span> Active tests</li>
+        </ul>
+        <div class="overview-panel__controls">
+          <button class="overview-panel__hamburger" data-role="overview-panel__open-menu">
+            <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <g stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="square">
+                <path d="M26.596 15.5H6.388M26.596 7.5H6.388M26.596 23.5H6.388"/>
+              </g>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="articles-filter-panel" data-role="filter-panel">
+        <div class="articles-filter-panel__animation">
+          <div class="articles-filter-panel__animation-2">
+            <p class="articles-filter-panel__title">Show:</p>
+            <ul class="articles-filter-panel__sections">
+              <li class="articles-filter-panel__section">
+                <div class="table">
+                  <div class="table-column">
+                    <div class="table-row">
+                      <div class="table-cell">
+                        <!-- My stories -->
+                        <div class="switch" data-role="mystories-switch">
+                          <input type="checkbox" id="mystories-switch">
+                          <span class="switch__value-off" data-role="switch__value-off">all</span>
+                          <label class="switch__value-container" for="mystories-switch">
+                            <span class="switch__switch"></span>
+                          </label>
+                          <span class="switch__value-on" data-role="switch__value-on">my teasers</span>
+                        </div>
+                      </div>
+                      <div class="table-cell">
+                        <!-- Show Ranking -->
+                        <div class="switch" data-role="showranking-switch">
+                          <input type="checkbox" id="showranking-switch">
+                          <span class="switch__value-off" data-role="switch__value-off">actions</span>
+                          <label class="switch__value-container" for="showranking-switch">
+                            <span class="switch__switch"></span>
+                          </label>
+                          <span class="switch__value-on" data-role="switch__value-on">numbers</span>
+                        </div>
+                      </div> <!-- end table-cell -->
+                    </div> <!-- end table-row -->
+                  </div> <!-- end table-column -->
+                </div> <!-- end table -->
+              </li>
+              <li class="articles-filter-panel__section">
+                <ul class="articles-filter-panel__filters" data-role="filter-list"></ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="articles__header">
+        <h3 class="is-visible"><span data-role="articles__header-label">Stories:</span></h3>
+        <div class="articles__header-filters">
+          <div class="filter" data-role="selected-filter">
+            <span data-role="selected-filter-title">filter</span>
+          </div>
+        </div>
+        <a href="?" class="toggle-filter" data-role="toggle-filter">
+          <svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path
+                d="M4.667 3.746c.531.311.889.893.889 1.56 0 .666-.358 1.247-.89 1.559V19H2.89V6.865A1.803 1.803 0 0 1 2 5.305c0-.666.358-1.248.889-1.559V1h1.778v2.746zm6.222 8.1c.531.311.889.893.889 1.56 0 .666-.358 1.247-.89 1.559V19H9.112v-4.035a1.803 1.803 0 0 1-.889-1.56c0-.666.358-1.248.89-1.559V1h1.777v10.846zm6.222-8.1c.531.311.889.893.889 1.56 0 .666-.358 1.247-.889 1.559V19h-1.778V6.865a1.803 1.803 0 0 1-.889-1.56c0-.666.358-1.248.89-1.559V1h1.777v2.746z"
+                fill-rule="evenodd"/>
+          </svg>
+        </a>
+      </div>
+      <ul class="articles__list" data-role="article-list"></ul>
+    </section>
+
+    <section id="abtester">
+      <div class="tentacles-abtester__inner">
+        <div class="tentacles-abtester__top-controls">
+          <a class="tentacles-button-close" data-role="ab-test-return" href="#">
+            <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+              <path
+                  d="M13.524 1L8 6.524 2.476 1 1 2.476 6.523 8 1 13.524 2.476 15l5.523-5.524L13.524 15 15 13.524 9.476 8 15 2.476z"
+                  fill-rule="evenodd"/>
+            </svg>
+          </a>
+        </div>
+        <div class="tentacles-abtester__main" data-role="abtester__main">
+          <div class="tentacles-abtester__articleinfo">
+            <p class="tentacles-abtester__article-date" data-role="ab-test-article-date"></p>
+            <h3 class="tentacles-abtester__article-title" data-role="ab-test-original-title"></h3>
+          </div>
+          <div class="tentacles-abtester__abtestinfo">
+            <p class="tentacles-abtester__abtest-status">A/B test state: <strong
+                data-role="abtester__status">preparing</strong></p>
+            <p class="tentacles-abtester__abtest-time-elapsed" data-role="abtester__time-elapsed"></p>
+            <p class="tentacles-abtester__abtest-author" data-role="abtester__author"></p>
+            <p class="tentacles-abtester__abtest-clicks" data-role="abtester__clicks"></p>
+          </div>
+          <form class="tentacles-abtester-create-form" data-role="abtester__create">
+            <div class="tentacles-abtester-item-panel" data-role="abtester__item-panel">
+              <ol data-role="abtester__item-list">
+                <li class="tentacles-abtester-item tentacles-abtester-item--active" data-variant="a">
+                  <div class="tentacles-abtester-tooltip">
+                    Please click on the text you want to test
+                  </div>
+                  <label class="tentacles-abtester-item__value-container" for="option0">
+                    <textarea class="tentacles-abtester-item__value" id="option0" name="option-a"
+                              data-role="ab-test-original-title" focus="true" disabled></textarea>
+                  </label>
+
+                  <div class="tentacles-abtester-item__controls">
+                    <a class="tentacles-abtester-item__toggle-preview" data-role="abtester__toggle-preview"
+                       title="Preview this title">
+                      <svg width="21" height="15" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M10.5 11.646c-2.032 0-3.678-1.724-3.678-3.851s1.646-3.85 3.678-3.85c2.033 0 3.676 1.723 3.676 3.85s-1.643 3.85-3.676 3.85m0-10.668C6.35.977 2.69 3.68.5 7.795c2.19 4.119 5.85 6.818 10 6.818 4.148 0 7.808-2.7 10-6.818-2.192-4.116-5.852-6.818-10-6.818"
+                            fill-rule="evenodd"></path>
+                      </svg>
+                    </a>
+                  </div>
+                  <div class="tentacles-abtester-subitem-textarea__add" data-role="abtester__add-subitem"> + Click to add text to replace</div>
+                </li>
+              </ol>
+              <div class="tentacles-abtester-item-panel__add" data-role="abtester__add-item"></div>
+            </div>
+            <button class="tentacles-abtester-create-form__start-test tentacles-oval-button is-disabled"
+                    data-role="abtester__create-button" type="submit"><span>Start test</span></button>
+          </form>
+          <div class="tentacles-abtester-progress-panel" data-role="abtester__active">
+            <div class="tentacles-abtester-item-panel" data-role="abtester__item-panel">
+              <ol data-role="abtester__progress-item-list">
+              </ol>
+            </div>
+            <button class="tentacles-abtester-progress-panel__cancel-test tentacles-oval-button"
+                    data-role="abtester__cancel-button"><span>Stop test</span></button>
+            <button class="tentacles-abtester-progress-panel__redo-test tentacles-oval-button"
+                    data-role="abtester__redo-button"><span>Redo test</span></button>
+          </div>
+        </div>
+        <div id="abtester__loading" data-role="state-loading">
+          Loading...
+        </div>
+        <div class="tentacles-abtester-message-screen">
+          <div class="tentacles-abtester-message-screen__inner"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="menu">
+      <div class="menu__top-bar">
+        <div class="menu__profile">
+          <div class="menu__avatar">
+            <img data-role="menu__avatar">
+          </div>
+          <p class="menu__username" data-role="menu__user"></p>
+        </div>
+        <div class="menu__controls">
+          <button class="menu__close" data-role="menu__close">
+            <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+              <path
+                  d="M13.524 1L8 6.524 2.476 1 1 2.476 6.523 8 1 13.524 2.476 15l5.523-5.524L13.524 15 15 13.524 9.476 8 15 2.476z"
+                  fill-rule="evenodd"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <ul class="menu__links">
+        <li>
+          <a href="[smartoctoUrl]/#/settings/" target="_blank">Account settings</a>
+        </li>
+        <li>
+          <a href="[smartoctoUrl]" target="_blank">Launch SmartOcto</a>
+        </li>
+        <li>
+          <a href="[smartoctoUrl]/#/reports/tentacles/" target="_blank">Tentacles Archive</a>
+        </li>
+        <li>
+          <a href="#" data-role="menu__sign-out" target="_blank">Sign out</a>
+        </li>
+      </ul>
+    </section>
+
+  </article>
+</main>
+<script type="text/javascript" src="../tentacles-desk/index.js"></script></body>
+</html>

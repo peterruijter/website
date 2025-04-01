@@ -1,0 +1,21 @@
+.article {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.column {
+  flex: 1;
+}
+
+.column:first-child {
+  margin-right: 20px;
+}
+
+img {
+  width: 100%;
+  height: auto;
+}
+
+h2 {
+  margin-top: 0;
+}

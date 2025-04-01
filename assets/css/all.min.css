@@ -1,0 +1,23 @@
+.svg-icon {
+    width: 1.5em;
+    height: 1.5em;
+    fill: currentColor; /* This makes the SVG inherit the text color */
+    display: inline-block;
+    vertical-align: middle;
+  }
+  
+  #footer .icons a {
+    color: rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: none;
+  }
+  
+  #footer .icons a:hover {
+    color: #49bf9d;
+  }
+  
+  #footer .icons .label {
+    display: none;
+  }

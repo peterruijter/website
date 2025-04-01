@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Parent Window</title>
+  <script>
+    let newWindow;
+	  
+	  window.addEventListener('message', function(event) {
+      console.log('Received message:', event.data);
+	    newWindow.close()
+    });
+    
+    function openSecondWindow() {
+       const randNumber = Math.floor(Math.random()*99);
+       newWindow = window.open('second_window.html?' + randNumber, 'articleWindow', 'popup,width=1,height=1');
+       setTimeout(function() {
+       newWindow.postMessage('Hi from parent', "*");
+       }, 500);
+    }
+  </script>
+</head>
+<body>
+  <button onclick="openSecondWindow()">Open Second Window</button>
+</body>
+</html>
+
